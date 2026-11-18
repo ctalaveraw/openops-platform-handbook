@@ -1,12 +1,12 @@
 # Forgejo and Repository Governance
 
-**Status:** Forgejo-first direction proposed; cutover not verified
+**Status:** GitHub canonical today; Forgejo migration is optional and contingent on capability parity
 
-**Reviewed:** 2026-11-17
+**Reviewed:** 2026-11-18
 
 ## Canonical repository policy
 
-Target authority: a self-managed Forgejo instance for source, issues, PRs, documentation, releases, repository settings and CI orchestration. GitHub remains a public, read-only publication mirror following an explicit cutover. Until a verified cutover, GitHub remains the existing repository's canonical source.
+**Current authority:** GitHub provides canonical source, issues, PRs, repository settings and GitHub Actions. **Potential target:** Forgejo offers independently operated Git/PR/CI capabilities if the team later elects a migration. GitHub becomes a read-only public mirror **only after** a verified, independently approved cutover. A Forgejo installation is not a reason to migrate by itself.
 
 The GitHub repo for this project is `ctalaveraw/openops-platform`. No second independently writable `main` branch should exist after cutover.
 
@@ -29,6 +29,10 @@ Forgejo Actions jobs execute code supplied by commits and pull requests. The run
 ## Federation and public contribution
 
 Disabling GitHub issues/PRs simplifies canonical discussion at the cost of increasing friction for external contributors. Before disabling them, validate public Forgejo reachability, registration/invitation policy, spam moderation and contribution instructions. A GitHub mirror must plainly identify the canonical upstream and how to report issues or submit changes. This is a governance decision, not a mandatory configuration.
+
+## Capability and operations gate
+
+Before a migration decision, apply [Capability Parity and DX](Capability-Parity-and-DX.md): protected PR checks, review authority, isolated runner execution, artifacts, OIDC trust, provider-specific webhook routing and human-approved GitOps promotion must pass with documented differences. Forgejo Actions explicitly does not guarantee GitHub Actions compatibility; essential logic must remain in portable scripts. GitHub environment reviewer controls do not imply a native Forgejo equivalent; prove the required authorization outcome through alternative controls.
 
 ## Operations gate
 

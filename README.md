@@ -10,6 +10,7 @@ This repository documents the architecture and its tradeoffs. It is not the runt
 - [Project charter](docs/Project-Charter.md)
 - [Architecture and ownership](docs/Platform-Architecture.md)
 - [Decision register](docs/Decision-Register.md)
+- [Capability parity and developer experience](docs/Capability-Parity-and-DX.md) — GitHub/Zulip now, optional Forgejo/Zulip later
 - [Roadmap and acceptance gates](docs/Roadmap-and-Acceptance.md)
 - [Engineering governance](docs/Engineering-Governance.md)
 - [Maintenance standard](docs/Handbook-Maintenance.md)

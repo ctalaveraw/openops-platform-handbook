@@ -1,50 +1,68 @@
 # ChatOps, Webhooks and Optional AI
 
-**Status:** Architecture proposals and acceptance criteria
+**Status:** Proposed provider-neutral integration contract; Zulip deployment and endpoints not yet verified  
+**Reviewed:** 2026-11-18  
+**Tracking:** [OpenOps DX issue #7](https://github.com/ctalaveraw/openops-platform/issues/7)
 
-**Reviewed:** 2026-11-17
+## Provider roles
 
-## Notification objectives
+- **Canonical forge now:** GitHub. Official Zulip GitHub integration supplies PR/review/issue events.
+- **CI now:** GitHub Actions. Trusted steps invoke the same repository-owned Python/CLI notification code used locally.
+- **Optional future forge:** Forgejo. Its webhook payloads and runner events require version-tested integration or an adapter; the event contract, destinations and bot remain unchanged.
+- **Collaboration:** one self-hosted Zulip organization with channels/topics rather than a Slack-compatible app platform.
+- **AI:** optional read-only consumer, never deployment authority.
 
-Deliver high-signal engineering events without routing service operations through chat. Examples: PR review requested, protected-branch CI failure, published release digest, promotion success/failure, reconciliation error, service unavailable, and incident recovery. Avoid per-commit spam, every successful scrape, and unbounded log dumps.
+Use native integrations first. Introduce a small Python adapter only for missing event types, validation, routing or formatting. Avoid an always-running event service if direct webhook posts are sufficient.
 
-## Integration progression
+## Signal policy
 
-1. Use native Forgejo notifications or direct supported webhooks where possible.
-2. Send CI status notifications from trusted workflow steps, keeping errors in CI logs as the authoritative evidence.
-3. Use Grafana/Alertmanager contact points or a documented small adapter for operational alerts.
-4. Introduce a shared Python formatter only when multiple producers require consistent filtering, routing or message schema.
-5. Later add bot commands that retrieve read-only state using minimal scopes.
+| Event | Destination | Action |
+| --- | --- | --- |
+| PR opened / review requested | development-events / Pull requests | Notify with direct review link |
+| CI failure on protected branch | development-events / CI failures | Include revision, run URL, component and failure state |
+| Artifact promotion or release | development-events / Releases | Identify immutable digest and provenance |
+| GitOps reconciliation or deployment failure | operations / Deployments | Include source desired-state link, severity and recovery owner |
+| Recovery after prior incident | operations / Incidents | Correlate with original event |
+| Successful routine push, scrape or job | None by default | Avoid notification spam |
 
-Do not build a persistent central notification service before a simple webhook pilot demonstrates a need.
-
-## Candidate event envelope
+## Portable event contract
 
 ```json
 {
   "schema_version": 1,
-  "source": "gitops",
-  "environment": "dev",
-  "component": "anime-app",
-  "event": "deployment_failed",
+  "source": "ci",
+  "provider": "github",
+  "event": "validation_failed",
+  "repository": "openops-platform",
+  "revision": "example-commit-sha",
   "severity": "warning",
-  "revision": "example-revision",
-  "evidence_url": "https://example.invalid/incident"
+  "idempotency_key": "ci:example-run:failure",
+  "evidence_url": "https://example.invalid/run/123",
+  "destination": {"channel": "development-events", "topic": "CI failures"}
 }
 ```
 
-This is an internal candidate contract, not the payload sent unmodified to Slack/Mattermost/Zulip. A transport adapter converts it to the destination format. Include correlation identifiers and timestamps when implementation makes them necessary; avoid secrets, raw tokens, privileged log output or personally identifying data.
+This is an **internal logical envelope**, not a Zulip or forge wire format. Adapt only at the producer/transport edge. Prefer durable event identifiers, explicit retries, bounded messages, redacted logs and structured topic mapping. Duplicate handling is an explicit test, not a magical delivery guarantee.
 
-## Slack-like integration
+## Integration and network boundaries
 
-Mattermost supports incoming webhooks and bot accounts with a familiar channel model. Zulip supports incoming integrations and topic-specific messages, including Python-friendly bot development. Verify the exact Forgejo webhook type, authentication/header options, payload compatibility, and failure/retry semantics in the chosen products. Avoid trusting arbitrary inbound events without verification.
+GitHub webhook POST delivery requires reachable HTTPS ingress to a narrow Zulip integration endpoint; alternatively, an authorized worker with outbound connectivity relays events. Do **not** expose the administrative UI or internal service ports solely to satisfy a webhook. Verify authenticity: native Zulip incoming webhook credentials or a signature-validation adapter for raw provider events. Rotate credentials and record least privilege.
 
-## AI assistant design
+Zulip supports Slack-compatible incoming webhook payloads with formatting limitations. This **does not** run arbitrary Slack apps, slash-command modals or Marketplace SaaS integrations.
 
-An optional model-backed bot may summarize linked incident evidence, answer questions about approved public project documentation, explain CI failure patterns and suggest issue drafts. Start with human-invoked, **read-only** capabilities and no credentials for Kubernetes mutations, deployment approvals or secret stores. Human approval remains mandatory for any future write capability.
+CI or GitOps may continue when Zulip is down. Notification failure is visible but never causes an otherwise valid build, release or rollback to fail unless a separate reviewed release policy explicitly requires acknowledgement.
 
-Before connecting source or chat history, define data classification, retention, training/provider policy, prompt injection boundaries, retrieval scope, model endpoint, availability, cost limits, audit logging and denial behavior. A self-hosted model is a possible implementation, not an automatic guarantee that all data and dependencies are local.
+## Optional engineering assistant
 
-## Acceptance evidence
+An opt-in Python bot can answer questions about authorized handbook pages and linked CI/incident evidence, summarize a chosen discussion topic, and draft an issue. Begin read-only and mention-triggered; never give it secret-manager, production Kubernetes, merge, workflow approval or arbitrary command-execution permissions. Enforce user-level retrieval authorization; treat retrieved chat/log/code content as untrusted. Record model endpoint, retention, cost, auditing, and incident response. Chat summaries are non-authoritative until reviewed into an ADR or issue.
 
-Demonstrate a webhook delivered once, a failing endpoint, bounded retry behavior, safe secret storage, lack of fatal impact when chat is offline, and read-only bot authorization tests. Establish whether duplicated events are acceptable before adding deduplication state.
+## Verification checklist
+
+- Official GitHub integration delivers review and issue events with sensible topics.
+- Synthetic failure and recovery notifications have correct evidence links and no token leakage.
+- Invalid credentials, replay/duplicates, rate limits, unreachable service and malformed payloads have bounded behavior.
+- A Forgejo test emitter produces equivalent *outcomes* through a verified adapter; do not assume GitHub webhook schema is interchangeable with Forgejo.
+- Zulip database, uploads and settings restore independently of GitHub/Forgejo state.
+- The CLI notifier runs locally and from both CI providers with identical test fixtures.
+
+See [Capability Parity and DX](Capability-Parity-and-DX.md) and [CI and Supply Chain](CI-and-Supply-Chain.md).

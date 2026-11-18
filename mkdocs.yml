@@ -18,6 +18,7 @@ nav:
   - CI and software supply chain: CI-and-Supply-Chain.md
   - GitOps and release lifecycle: GitOps-and-Release-Lifecycle.md
   - Chat platform evaluation: Chat-Platform-Evaluation.md
+  - Capability parity and developer experience: Capability-Parity-and-DX.md
   - ChatOps and AI: ChatOps-and-AI.md
   - Security and secrets: Security-and-Secrets.md
   - Observability and reliability: Observability-and-Reliability.md

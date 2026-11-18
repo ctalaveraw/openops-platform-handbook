@@ -1,49 +1,56 @@
 # Team Chat Platform Evaluation
 
-**Status:** Decision open; Zulip and Mattermost Team Edition shortlisted
+**Status:** Zulip selected for the current OpenOps collaboration rollout; installation in progress, acceptance tests not yet recorded  
+**Reviewed:** 2026-11-18
 
-**Reviewed:** 2026-11-17
+## Decision context
 
-## Evaluation context
+Slack Free's limited searchable history and app limits motivated an independently operated collaboration service. The engineering requirements are durable searchable discussion, meaningful asynchronous topics, PR/CI alerts, Python-capable bots, an upgrade/backup path, and no paid chat subscription for the small team.
 
-The team first considered Slack Free with GitHub integration and outgoing notifications. Short searchable history, deletion policy and hosted-service dependence motivate a self-managed alternative. Chat is for coordination and ChatOps, not permanent system state.
+**Direction:** Self-hosted Zulip is the primary collaboration candidate being installed. Mattermost Team Edition remains an evaluated alternative, not a parallel deployment requirement. GitHub and GitHub Actions remain canonical for source and CI today; potential Forgejo migration is a distinct decision.
 
-## Comparison
+## Decision rationale
 
-| Requirement | Mattermost Team Edition | Zulip self-hosted |
-| --- | --- | --- |
-| Familiar Slack-like channel/DM UX | Closer match | Different channel + topic model |
-| Incoming webhooks | Supported; Slack-format compatibility | Supported; Slack-compatible incoming integrations |
-| Bot/API model | Webhooks, bot accounts, slash commands, plugins | REST API, outgoing webhook bots, Python tooling |
-| Durable discussion organization | Channels and threads | Topic-based conversation model is central |
-| Self-managed deployment | Open-source Team Edition, PostgreSQL | Open-source server, more involved stack |
-| AI integration | Agents features and licensing need edition-specific verification | Bot/model integration; local model possible |
-| License/feature caveat | Distinguish Team Edition from commercial Entry/other tiers | Check exact deployed version and integration capabilities |
+| Requirement | Zulip | Mattermost Team Edition | Current outcome |
+| --- | --- | --- | --- |
+| History outside Slack's free retention policy | Self-managed server and backups | Self-managed server and backups | Both viable |
+| Asynchronous technical discussion | Topic-first model | Channels and threads | Zulip favored |
+| GitHub PR/review notifications | Official Zulip GitHub integration | Webhook/plugin path | Zulip meets initial need |
+| Developer-facing webhooks | Native integrations and Slack-compatible incoming payload | Incoming webhooks | Both viable |
+| Python-native bot integration | REST API and interactive bot framework | REST/webhook/bot accounts | Zulip favored |
+| Slack-like interface | Different channel/topic mental model | Closer UI | Mattermost favored |
+| Voice/video huddles | External configured call provider such as Jitsi | Edition-specific calling features | Not a core OpenOps parity requirement |
+| AI features | Optional local/remote model integration; verify installed version | Agents vary by license/edition | Pilot read-only; no assumed entitlement |
+| Operational responsibilities | DB, files, web ingress, mobile push service, backups | Similar host/DB/backup obligations | Explicit acceptance gate |
 
-Mattermost Entry and Mattermost Team Edition are not interchangeable. Do not assume the AI features or history policies advertised for Entry are available in Team Edition. No ChatOps/AI feature should rely on an unverified edition entitlement.
+Mattermost **Entry** and **Team Edition** are not interchangeable products and have different proprietary feature/license implications. Zulip does not automatically replicate Slack Workflow Builder, Canvas, arbitrary Marketplace apps, interactive Block Kit or Slack's proprietary API. Zulip supports Slack-*format* incoming webhooks, not general Slack-app execution.
 
-## Operational evaluation
+## Initial Zulip operating model
 
-Run both on isolated test instances with test data. Evaluate desktop/mobile workflow; search after aging/backup; webhook delivery from Forgejo; actionable PR links; bot command ergonomics; Python API usage; upgrade procedure; database/attachment backup; restore; RAM/disk consumption; and license/feature behavior.
+Start with **one organization** for OpenOps and a modest channel/topic plan:
 
-## Proposed weighting
+- **engineering:** architecture, PR design, frontend, CI/CD, Kubernetes, decisions in progress
+- **development-events:** pull requests, reviews, CI failures, releases
+- **operations:** deployments, incidents, availability, recovery
+- **research:** tool evaluations, integrations, future work
 
-1. Free self-hosted long-term data access and predictable licensing.
-2. Forgejo webhooks and standard ChatOps integration without proprietary SaaS bridges.
-3. Usability for daily code reviews and incident discussion.
-4. Bot/API support, especially Python.
-5. Resource usage and restore complexity.
-6. Optional local AI support without privileged automation.
+One self-hosted Zulip server can host multiple organizations; a second organization is appropriate only for separate membership and governance. Independent organization spaces on one server still share compute, upgrades and failure domains.
 
-A familiarity preference alone should not decide the result; conversely, topic organization has limited value if contributors dislike the UX. Document an experiment and select one chat platform through a reviewed ADR.
+The server must have verified TLS, appropriate access control, durable database/attachment/configuration backup, and a tested restoration procedure. Official mobile push notification service access is free for small self-hosted organizations up to ten users; document the external service dependency and eligibility rules.
 
-## Architecture rule
+## Acceptance tests (not yet complete)
 
-The forge, CI, GitOps and application must function during chat outages. The chat service receives notifications rather than acting as the authoritative deployment controller or sole incident log.
+1. Ben and the primary maintainer can use clients, search long topics and access permitted channels.
+2. A GitHub PR and review event appears in a correctly routed Zulip topic with evidence links.
+3. A portable CI notifier posts to a Zulip bot without a Slack application, and fails gracefully during Zulip outage.
+4. Access-control, bot-token rotation, TLS, restore, and mobile notifications are validated.
+5. A read-only Python bot can retrieve only explicitly authorized content if AI is enabled.
 
-## References
+[Capability-parity contract](Capability-Parity-and-DX.md) is authoritative for provider mappings. [ChatOps and AI](ChatOps-and-AI.md) specifies event, security and bot boundaries.
 
-- [Mattermost Team Edition](https://docs.mattermost.com/product-overview/editions-and-offerings.html)
-- [Mattermost integration documentation](https://developers.mattermost.com/integrate/webhooks/incoming/)
-- [Zulip integration documentation](https://zulip.com/integrations/)
-- [Zulip self-hosting documentation](https://zulip.readthedocs.io/en/latest/production/install.html)
+## Sources
+
+- [Zulip native integrations](https://zulip.com/help/integrations-overview)
+- [Zulip GitHub integration](https://zulip.com/integrations/github)
+- [Zulip self-hosting](https://zulip.com/self-hosting/)
+- [Zulip call provider configuration](https://zulip.com/help/configure-call-provider)

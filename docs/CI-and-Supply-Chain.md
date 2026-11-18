@@ -2,7 +2,7 @@
 
 **Status:** Planned delivery contract; no implementation asserted
 
-**Reviewed:** 2026-11-17
+**Reviewed:** 2026-11-18
 
 ## Design rule
 
@@ -39,7 +39,7 @@ Untrusted PR jobs must not receive publication, cloud, registry administration o
 
 ## Action and dependency ownership
 
-Pin actions by immutable commit, images by digest and CLI versions by checksum. Maintain source license, upstream URL, version, mirror location, update owner, verification method and emergency fallback. Internal mirroring protects availability; it does not eliminate the need to patch vulnerable upstream components. Treat Forgejo Actions and GitHub Actions syntax as similar but not identical; validate locally against the chosen runner implementation.
+Pin actions by immutable commit, images by digest and CLI versions by checksum. Maintain source license, upstream URL, version, mirror location, update owner, verification method and emergency fallback. Internal mirroring protects availability; it does not eliminate the need to patch vulnerable upstream components. Treat Forgejo Actions and GitHub Actions as different providers with a shared execution **contract**, not interchangeable workflow engines. Forgejo documents differences in job permission keys, contexts, runner environment, OIDC enablement and cross-workflow artifact access. Run the identical checked-in CLI/OCI test entrypoints under both providers and separately test identity, artifact and promotion boundaries. See [Capability Parity and DX](Capability-Parity-and-DX.md).
 
 ## Dependency automation
 

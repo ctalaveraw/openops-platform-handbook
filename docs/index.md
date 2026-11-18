@@ -22,7 +22,8 @@ The project prioritizes demonstrable engineering outcomes: small changes, review
 | Source authority and Forgejo governance | [Forgejo and Repository Governance](Forgejo-and-Repository-Governance.md) |
 | Runner isolation, CI, artifacts and updates | [CI and Supply Chain](CI-and-Supply-Chain.md) |
 | Release promotion and Kubernetes reconciliation | [GitOps and Release Lifecycle](GitOps-and-Release-Lifecycle.md) |
-| Team chat platform selection | [Chat Platform Evaluation](Chat-Platform-Evaluation.md) |
+| Team chat direction and rollout | [Chat Platform Evaluation](Chat-Platform-Evaluation.md) |
+| GitHub/Zulip → Forgejo/Zulip capability contract and DX | [Capability Parity and DX](Capability-Parity-and-DX.md) |
 | Webhooks, bots and optional AI | [ChatOps and AI](ChatOps-and-AI.md) |
 | Threat boundaries and security controls | [Security and Secrets](Security-and-Secrets.md) |
 | Metrics, alerting and incident handling | [Observability and Reliability](Observability-and-Reliability.md) |
@@ -45,7 +46,7 @@ The project prioritizes demonstrable engineering outcomes: small changes, review
 
 At the 2026-11-17 baseline inspection, [`ctalaveraw/openops-platform`](https://github.com/ctalaveraw/openops-platform) contained only a minimal README on `main`. No application or platform deployment had been verified from this repository. This handbook is maintained separately in [`ctalaveraw/openops-platform-handbook`](https://github.com/ctalaveraw/openops-platform-handbook). Update these claims only when implementation evidence exists.
 
-The proposed long-term direction is **Forgejo as canonical source/issue/PR system, with a separately owned handbook**, with GitHub as a public read-only Git mirror. That migration is **not recorded as complete**. CI, chat, AI, registry and GitOps selections are evaluated separately; they are not implied deployment commitments.
+The **current authority is GitHub for source, issues, pull requests and GitHub Actions**. Self-hosted Zulip is the selected collaboration direction (installation and integration acceptance still require verification). **Forgejo/Forgejo Actions is an optional portability target**, not a scheduled mandatory migration. Any future authority transfer requires an explicit decision, test evidence and a no-dual-writer cutover. CI, AI, registry and GitOps are evaluated separately; a proposal does not imply deployment.
 
 ## Governing principles
 
