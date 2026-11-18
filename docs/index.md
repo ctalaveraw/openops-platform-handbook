@@ -30,7 +30,7 @@ The project prioritizes demonstrable engineering outcomes: small changes, review
 | Canonical forge transition and GitHub mirroring | [Migration and Mirroring](Migration-and-Mirroring.md) |
 | Delivery stages and gates | [Roadmap and Acceptance](Roadmap-and-Acceptance.md) |
 | Decisions awaiting validation | [Decision Register](Decision-Register.md) |
-| Editing standards and update process | [Wiki Maintenance](Handbook-Maintenance.md) |
+| Editing standards and update process | [Handbook Maintenance](Handbook-Maintenance.md) |
 
 ## Source-of-truth boundaries
 
@@ -57,4 +57,4 @@ The proposed long-term direction is **Forgejo as canonical source/issue/PR syste
 6. Engineering claims require reproducible evidence, not screenshots alone or successful command output without context.
 7. All essential workflows must remain reproducible without proprietary hosted marketplace services.
 
-See [Wiki Maintenance](Handbook-Maintenance.md) before changing published material.
+See [Handbook Maintenance](Handbook-Maintenance.md) before changing published material.
