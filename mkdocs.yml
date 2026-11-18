@@ -1,0 +1,33 @@
+site_name: OpenOps Platform Engineering Handbook
+site_description: Architecture, design decisions, and engineering planning for OpenOps Platform
+site_url: https://ctalaveraw.github.io/openops-platform-handbook/
+repo_url: https://github.com/ctalaveraw/openops-platform-handbook
+docs_dir: docs
+site_dir: site
+theme:
+  name: mkdocs
+nav:
+  - Home: index.md
+  - Project charter: Project-Charter.md
+  - Engineering governance: Engineering-Governance.md
+  - Application and workload: Application-Product.md
+  - Frontend architecture: Frontend-Architecture.md
+  - Platform architecture: Platform-Architecture.md
+  - Infrastructure and environments: Infrastructure-and-Environments.md
+  - Forgejo and repository governance: Forgejo-and-Repository-Governance.md
+  - CI and software supply chain: CI-and-Supply-Chain.md
+  - GitOps and release lifecycle: GitOps-and-Release-Lifecycle.md
+  - Chat platform evaluation: Chat-Platform-Evaluation.md
+  - ChatOps and AI: ChatOps-and-AI.md
+  - Security and secrets: Security-and-Secrets.md
+  - Observability and reliability: Observability-and-Reliability.md
+  - Backup and recovery: Backup-and-Recovery.md
+  - Migration and mirroring: Migration-and-Mirroring.md
+  - Roadmap and acceptance: Roadmap-and-Acceptance.md
+  - Future project ideas: Future-Project-Ideas.md
+  - Decision register: Decision-Register.md
+  - Handbook maintenance: Handbook-Maintenance.md
+markdown_extensions:
+  - tables
+  - fenced_code
+  - toc
