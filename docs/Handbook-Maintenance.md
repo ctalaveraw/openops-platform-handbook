@@ -34,7 +34,7 @@ The handbook is a maintained engineering reference for contributors and future o
 
 | Artifact | Content |
 | --- | --- |
-| Wiki | Options, decisions in progress, target architecture, research and concepts |
+| Handbook | Options, decisions in progress, target architecture, research and concepts |
 | Source ADR | Accepted decisions and revision history |
 | Issue | Task ownership and acceptance criteria |
 | PR | Change diff and review |
