@@ -31,6 +31,7 @@ The project prioritizes demonstrable engineering outcomes: small changes, review
 | Canonical forge transition and GitHub mirroring | [Migration and Mirroring](Migration-and-Mirroring.md) |
 | Delivery stages and gates | [Roadmap and Acceptance](Roadmap-and-Acceptance.md) |
 | Decisions awaiting validation | [Decision Register](Decision-Register.md) |
+| Work tracking, parent issues and critical path | [Work Tracking and Dependencies](Work-Tracking-and-Dependencies.md) |
 | Editing standards and update process | [Handbook Maintenance](Handbook-Maintenance.md) |
 
 ## Source-of-truth boundaries

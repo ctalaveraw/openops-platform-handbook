@@ -12,6 +12,7 @@ This repository documents the architecture and its tradeoffs. It is not the runt
 - [Decision register](docs/Decision-Register.md)
 - [Capability parity and developer experience](docs/Capability-Parity-and-DX.md) — GitHub/Zulip now, optional Forgejo/Zulip later
 - [Roadmap and acceptance gates](docs/Roadmap-and-Acceptance.md)
+- [Work tracking and dependencies](docs/Work-Tracking-and-Dependencies.md)
 - [Engineering governance](docs/Engineering-Governance.md)
 - [Maintenance standard](docs/Handbook-Maintenance.md)
 

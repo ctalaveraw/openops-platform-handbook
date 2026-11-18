@@ -27,6 +27,7 @@ nav:
   - Roadmap and acceptance: Roadmap-and-Acceptance.md
   - Future project ideas: Future-Project-Ideas.md
   - Decision register: Decision-Register.md
+  - Work tracking and dependencies: Work-Tracking-and-Dependencies.md
   - Handbook maintenance: Handbook-Maintenance.md
 markdown_extensions:
   - tables
