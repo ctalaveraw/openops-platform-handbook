@@ -1,68 +1,51 @@
-# ChatOps, Webhooks and Optional AI
+# ChatOps and optional AI
 
-**Status:** Proposed provider-neutral integration contract; Zulip deployment and endpoints not yet verified  
-**Reviewed:** 2026-11-18  
-**Tracking:** [OpenOps DX issue #7](https://github.com/ctalaveraw/openops-platform/issues/7)
+**Status:** Operational Zulip and partial GitHub integration; additional integrations in progress  
+**Reviewed:** 2026-11-20  
+**Tracking:** [OpenOps Zulip epic #15](https://github.com/ctalaveraw/openops-platform/issues/15), [ARM Gotify bridge #39](https://github.com/ctalaveraw/arm-homelab-platform/issues/39)
 
-## Provider roles
+The [Zulip integration map](Zulip-Integration-Map.md) is the current inventory, event-routing policy, operational acceptance checklist and rollout order for OpenOps, the ARM homelab, both Git forges and future services. This page records the longer-term design boundaries.
 
-- **Canonical forge now:** GitHub. Official Zulip GitHub integration supplies PR/review/issue events.
-- **CI now:** GitHub Actions. Trusted steps invoke the same repository-owned Python/CLI notification code used locally.
-- **Optional future forge:** Forgejo. Its webhook payloads and runner events require version-tested integration or an adapter; the event contract, destinations and bot remain unchanged.
-- **Collaboration:** one self-hosted Zulip organization with channels/topics rather than a Slack-compatible app platform.
-- **AI:** optional read-only consumer, never deployment authority.
+## Role of Zulip
 
-Use native integrations first. Introduce a small Python adapter only for missing event types, validation, routing or formatting. Avoid an always-running event service if direct webhook posts are sufficient.
+Zulip is a communication and incident coordination destination. It does not own source control, run CI, deploy applications or retain the only copy of incident evidence. Issues, PRs, source commits, immutable artifacts, monitoring databases and reviewed runbooks remain in their existing systems of record.
 
-## Signal policy
+Zulip 13.2 runs in the ARM homelab behind public HTTPS ingress. The OpenOps collaboration organization is distinct from the personal Projects organization, including memberships and bot credentials. The operator has confirmed an OpenOps PR-opened event from the native GitHub integration. Review and issue event coverage, CI delivery, monitoring and recovery remain separately tracked.
 
-| Event | Destination | Action |
+## Integration responsibility
+
+| Component | Responsibility | Status |
 | --- | --- | --- |
-| PR opened / review requested | development-events / Pull requests | Notify with direct review link |
-| CI failure on protected branch | development-events / CI failures | Include revision, run URL, component and failure state |
-| Artifact promotion or release | development-events / Releases | Identify immutable digest and provenance |
-| GitOps reconciliation or deployment failure | operations / Deployments | Include source desired-state link, severity and recovery owner |
-| Recovery after prior incident | operations / Incidents | Correlate with original event |
-| Successful routine push, scrape or job | None by default | Avoid notification spam |
+| GitHub incoming webhook | Human project activity: selected PR, review and issue events, grouped by native topic | First OpenOps PR notification observed; remaining events under test |
+| Python CI notifier | Selected failure and correlated recovery events from GitHub and Forgejo | Implemented, offline tested; trusted workflow sending pending |
+| Forgejo-specific integration | Local CI, registry or forge activity not already reported by canonical GitHub | Planned and version-dependent |
+| Gotify forwarding | Operational notifications already received by the LAN-only Gotify service | Separate ARM implementation planned |
+| Monitoring integrations | Service health, alert firing and resolution, deployment trouble | Not enabled as a complete live integration |
+| AI assistant | Optional explanations and summaries of authorized sources | Research only |
 
-## Portable event contract
+The current OpenOps sender's strict version-1 schema covers **only** CI failure/recovery, not arbitrary service events. New event producers can use native Zulip integrations or independently versioned adapters; do not silently change the existing contract.
 
-```json
-{
-  "schema_version": 1,
-  "source": "ci",
-  "provider": "github",
-  "event": "validation_failed",
-  "repository": "openops-platform",
-  "revision": "example-commit-sha",
-  "severity": "warning",
-  "idempotency_key": "ci:example-run:failure",
-  "evidence_url": "https://example.invalid/run/123",
-  "destination": {"channel": "development-events", "topic": "CI failures"}
-}
-```
+## Authority and failure boundaries
 
-This is an **internal logical envelope**, not a Zulip or forge wire format. Adapt only at the producer/transport edge. Prefer durable event identifiers, explicit retries, bounded messages, redacted logs and structured topic mapping. Duplicate handling is an explicit test, not a magical delivery guarantee.
+1. GitHub is canonical until a reviewed migration explicitly changes that choice. Do not mirror GitHub PR and push notifications a second time from Forgejo.
+2. Each producer uses its own least-privileged credential. Separate organizations require separate bot configurations and exact destination URL checks.
+3. External webhook authentication must be validated by the native Zulip integration or a narrowly scoped signature-validation adapter. Treat webhook payloads, log lines and hyperlinks as untrusted input.
+4. Chat delivery is best-effort. A failed notification cannot change a passing or failing validation result, hold a GitOps rollout, or stop recovery.
+5. Pair meaningful failures with confirmed recoveries. Suppress routine successful builds, noisy pushes, scrapes and repetitive service reports.
+6. A reusable message includes an identifiable source, event identifier, clear result and a link to the original evidence. Do not paste secret-bearing logs or internal-only links into a public channel.
 
-## Integration and network boundaries
+## Optional AI assistant
 
-GitHub webhook POST delivery requires reachable HTTPS ingress to a narrow Zulip integration endpoint; alternatively, an authorized worker with outbound connectivity relays events. Do **not** expose the administrative UI or internal service ports solely to satisfy a webhook. Verify authenticity: native Zulip incoming webhook credentials or a signature-validation adapter for raw provider events. Rotate credentials and record least privilege.
+Start with a read-only, manually invoked Python bot. Candidate tasks are citing handbook pages, summarizing a chosen authorized topic or explaining a supplied sanitized CI failure. Maintain the sender's organization and channel permissions; do not let an AI bot access unrelated private organizations through a broadly privileged account.
 
-Zulip supports Slack-compatible incoming webhook payloads with formatting limitations. This **does not** run arbitrary Slack apps, slash-command modals or Marketplace SaaS integrations.
+Do not grant production host shells, `kubectl`, secret-manager access, PR merge rights or deployment approval as an initial capability. Retrieved code, chat and logs are untrusted input. Model provider, prompt retention, access-control tests, error behavior and human review requirements must be recorded before deployment.
 
-CI or GitOps may continue when Zulip is down. Notification failure is visible but never causes an otherwise valid build, release or rollback to fail unless a separate reviewed release policy explicitly requires acknowledgement.
+A bot response is not an accepted architecture decision, incident record or deployment instruction until a maintainer reviews and records it in the appropriate system.
 
-## Optional engineering assistant
+## References
 
-An opt-in Python bot can answer questions about authorized handbook pages and linked CI/incident evidence, summarize a chosen discussion topic, and draft an issue. Begin read-only and mention-triggered; never give it secret-manager, production Kubernetes, merge, workflow approval or arbitrary command-execution permissions. Enforce user-level retrieval authorization; treat retrieved chat/log/code content as untrusted. Record model endpoint, retention, cost, auditing, and incident response. Chat summaries are non-authoritative until reviewed into an ADR or issue.
-
-## Verification checklist
-
-- Official GitHub integration delivers review and issue events with sensible topics.
-- Synthetic failure and recovery notifications have correct evidence links and no token leakage.
-- Invalid credentials, replay/duplicates, rate limits, unreachable service and malformed payloads have bounded behavior.
-- A Forgejo test emitter produces equivalent *outcomes* through a verified adapter; do not assume GitHub webhook schema is interchangeable with Forgejo.
-- Zulip database, uploads and settings restore independently of GitHub/Forgejo state.
-- The CLI notifier runs locally and from both CI providers with identical test fixtures.
-
-See [Capability Parity and DX](Capability-Parity-and-DX.md) and [CI and Supply Chain](CI-and-Supply-Chain.md).
+- [Zulip integration map](Zulip-Integration-Map.md)
+- [Capability parity and developer experience](Capability-Parity-and-DX.md)
+- [OpenOps CI sender and tests](https://github.com/ctalaveraw/openops-platform/blob/main/docs/ci/zulip-notifications.md)
+- [Zulip REST API](https://zulip.com/api/rest)
+- [Zulip integrations](https://zulip.com/help/integrations-overview)

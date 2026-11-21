@@ -20,6 +20,7 @@ nav:
   - Chat platform evaluation: Chat-Platform-Evaluation.md
   - Capability parity and developer experience: Capability-Parity-and-DX.md
   - ChatOps and AI: ChatOps-and-AI.md
+  - Zulip integration map: Zulip-Integration-Map.md
   - Security and secrets: Security-and-Secrets.md
   - Observability and reliability: Observability-and-Reliability.md
   - Backup and recovery: Backup-and-Recovery.md
