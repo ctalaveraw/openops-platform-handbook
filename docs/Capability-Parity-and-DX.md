@@ -1,9 +1,9 @@
 # Capability Parity and Developer Experience
 
 **Status:** Proposed portability contract; product capabilities researched, end-to-end parity unverified  
-**Reviewed:** 2026-11-18  
+**Reviewed:** 2026-11-20  
 **Current authority:** GitHub and GitHub Actions  
-**Current collaboration direction:** Self-hosted Zulip (installation in progress; operational status not verified here)  
+**Current collaboration:** Self-hosted Zulip 13.2; the OpenOps organization and first native GitHub PR notification are operator-confirmed; remaining events, CI delivery and recovery are not yet fully verified  
 **Optional future target:** Forgejo, Forgejo Actions and the same Zulip deployment  
 **Tracking:** [OpenOps DX issue #7](https://github.com/ctalaveraw/openops-platform/issues/7)
 
@@ -33,7 +33,7 @@ The mappings below are research-based design hypotheses, **not** operational tes
 | --- | --- | --- | --- |
 | Channels, DMs, searchable collaboration | Zulip channels, topics, DMs, self-managed history | Unchanged Zulip | **Native**, different threading/UX |
 | Long-lived knowledge | Zulip search plus canonical handbook/ADRs | Unchanged | **Native + policy**; chat is not an incident database backup |
-| PRs, reviews, issue notifications | Official Zulip GitHub webhook integration | Forgejo webhook/Gitea-compatible option or verified adapter to Zulip | **Native now; adapter/verify later** |
+| PRs, reviews, issue notifications | Official Zulip GitHub webhook (PR-opened event observed) | Forgejo Slack-compatible notification or verified adapter, tested on deployed version | **Partial live acceptance now; additional events unverified** |
 | CI failure and recovery messages | Trusted CI job invokes portable notifier / Zulip API | Same notifier from isolated Forgejo runner | **Adapter**, no embedded Slack app dependency |
 | Slack-format incoming notifications | Zulip Slack-compatible incoming webhook | Same | **Native subset**; formatting quirks and no Slack app lifecycle |
 | Bot commands, status lookup and summaries | Zulip REST API, Python interactive bots, optional local LLM | Same | **Adapter**; scoped read-only bot, not Slack OAuth/modals |
@@ -96,7 +96,9 @@ Forgejo v17 release notes changed/deprecated webhook event families for Action r
 
 In production, GitHub's webhook delivery must reach a controlled HTTPS ingress route on the self-hosted Zulip server, or an approved outbound relay must be used. Do not expose internal admin interfaces, CI secrets or privileged endpoints merely to receive notifications. Zulip notification delivery is **best-effort** and is not a release prerequisite.
 
-### Stable event envelope (proposed)
+### Stable CI event envelope (implemented)
+
+The [OpenOps notifier](https://github.com/ctalaveraw/openops-platform/blob/main/scripts/notifications/notify_zulip.py) implements a strict version-1 **CI-only** JSON event envelope. Its canonical [GitHub fixture](https://github.com/ctalaveraw/openops-platform/blob/main/examples/notifications/github-failure.json) and [contract documentation](https://github.com/ctalaveraw/openops-platform/blob/main/docs/ci/zulip-notifications.md) take precedence over older illustrative designs.
 
 ```json
 {
@@ -104,18 +106,22 @@ In production, GitHub's webhook delivery must reach a controlled HTTPS ingress r
   "source": "ci",
   "provider": "github",
   "event": "validation_failed",
-  "repository": "openops-platform",
-  "revision": "example-commit-sha",
-  "environment": "dev",
+  "repository": "example/openops-platform",
+  "workflow": "Repository checks",
+  "revision": "0123456789abcdef0123456789abcdef01234567",
   "severity": "warning",
-  "occurred_at": "2026-11-18T00:00:00Z",
-  "idempotency_key": "ci:example-run:failure",
-  "evidence_url": "https://example.invalid/runs/123",
-  "destination": {"channel": "development-events", "topic": "CI failures"}
+  "idempotency_key": "github:repository-checks:123:1:failure",
+  "evidence_url": "https://github.com/example/openops-platform/actions/runs/123",
+  "destination": {
+    "channel": "development-events",
+    "topic": "CI / Repository checks"
+  }
 }
 ```
 
-The envelope belongs to OpenOps. It is **not** a GitHub, Forgejo or Zulip wire schema. The provider-specific adapter verifies inbound authentication, transforms allowed fields, sets routing and idempotency, and sends an appropriately encoded Zulip API request. Never relay arbitrary untrusted markdown, credentials or raw logs without validation and bounds.
+The emitter creates the envelope from a trusted CI context. The notifier validates it, formats a Zulip message and sends through an exact-organization Generic bot only when explicitly requested. Current tests cover both GitHub and Forgejo fixtures; trusted-workflow live delivery and durable deduplication remain open. Other operational events should use native Zulip integrations or an independently reviewed adapter, not an undocumented expansion of the CI schema.
+
+For the current channel, topic, event ownership and rollout state, see the [Zulip integration map](Zulip-Integration-Map.md).
 
 ## DX quality bar
 
